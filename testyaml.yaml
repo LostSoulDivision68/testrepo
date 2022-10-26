@@ -19,23 +19,27 @@ stages:
         displayName: 'Publish Artifact: drop'
 - stage: 'Test'
   jobs:
-  - job: 'DeployToTest'
-    steps:
-    - task: DownloadBuildArtifacts@0
-      inputs:
-        buildType: 'current'
-        downloadType: 'single'
-        artifactName: 'drop'
-        downloadPath: '$(System.DefaultWorkingDirectory)'
-    - task: AzureResourceManagerTemplateDeployment@3
-      inputs:
-        deploymentScope: 'Resource Group'
-        azureResourceManagerConnection: '<subscription-connection-name>'
-        subscriptionId: '<subscriptiont-id>'
-        action: 'Create Or Update Resource Group'
-        resourceGroupName: 'erwin-test'
-        location: 'West Europe'
-        templateLocation: 'Linked artifact'
-        csmFile: '$(System.DefaultWorkingDirectory)/drop/templates/api.json'
-        csmParametersFile: '$(System.DefaultWorkingDirectory)/drop/templates/api.test.json'
-        deploymentMode: 'Incremental'
+  - deployment: 'DeployToTest'
+    environment: 'infrastructure-test'
+    strategy:
+        runOnce:
+          deploy:
+            steps:
+            - task: DownloadBuildArtifacts@0
+              inputs:
+                buildType: 'current'
+                downloadType: 'single'
+                artifactName: 'drop'
+                downloadPath: '$(System.DefaultWorkingDirectory)'
+            - task: AzureResourceManagerTemplateDeployment@3
+              inputs:
+                deploymentScope: 'Resource Group'
+                azureResourceManagerConnection: '<subscription-connection-name>'
+                subscriptionId: '<subscriptiont-id>'
+                action: 'Create Or Update Resource Group'
+                resourceGroupName: 'erwin-test'
+                location: 'West Europe'
+                templateLocation: 'Linked artifact'
+                csmFile: '$(System.DefaultWorkingDirectory)/drop/templates/api.json'
+                csmParametersFile: '$(System.DefaultWorkingDirectory)/drop/templates/api.test.json'
+                deploymentMode: 'Incremental'
